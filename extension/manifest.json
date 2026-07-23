@@ -1,0 +1,10 @@
+{
+  "manifest_version": 3,
+  "name": "Krynox Method — TikTok Quality Tool",
+  "version": "1.0",
+  "description": "Patch MP4 video metadata locally to preserve quality on TikTok. No server, no uploads, fully private.",
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Krynox x Zenn"
+  }
+}
