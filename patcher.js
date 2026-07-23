@@ -101,7 +101,7 @@ function patchMdia(buf, start, len) {
     const ty = buf.toString('ascii', pos + 4, pos + 8);
     if (sz < 8) break;
     if (ty === 'hdlr') {
-      const nameStart = pos + 24;
+      const nameStart = pos + 32;
       const maxLen = Math.min(48, end - nameStart);
       if (nameStart + maxLen <= len) {
         const nameBuf = Buffer.from('Krynox Encoder\0');
