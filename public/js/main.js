@@ -162,13 +162,20 @@ function showResult(data, filename) {
 
     const dlName = (data.filename || filename).replace(/\.[^.]+$/, '') + '-krynox.mp4';
     const dl = document.getElementById('downloadBtn');
-    dl.href = 'javascript:void(0)';
-    dl.onclick = (e) => {
+    dl.addEventListener('click', (e) => {
       e.preventDefault();
-      window.location.href = data.url;
-    };
+      const a = document.createElement('a');
+      a.href = data.url;
+      a.download = dlName;
+      a.click();
+    });
 
-    window.location.href = data.url;
+    const a = document.createElement('a');
+    a.href = data.url;
+    a.download = dlName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   }, 500);
 }
 
