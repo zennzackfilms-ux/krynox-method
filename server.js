@@ -42,10 +42,9 @@ app.post('/api/process', upload.single('video'), async (req, res) => {
     await patchVideo(inputPath, outputPath, encode);
     fs.unlink(inputPath, () => {});
 
-    const dlName = req.file.originalname.replace(/\.[^.]+$/, '') + '-krynox.mp4';
-    res.download(outputPath, dlName, (err) => {
-      if (err && !res.headersSent) res.status(500).json({ error: 'Download failed' });
-      fs.unlink(outputPath, () => {});
+    res.json({
+      url: '/api/download/' + outName,
+      filename: req.file.originalname
     });
   } catch (e) {
     console.error('Process error:', e);
@@ -54,34 +53,14 @@ app.post('/api/process', upload.single('video'), async (req, res) => {
   }
 });
 
-app.post('/api/process-link', async (req, res) => {
-  try {
-    const { url, encode } = req.body;
-    if (!url) return res.status(400).json({ error: 'No URL provided' });
-    const match = url.match(/video\.itzcrih\.it\/v\/([a-f0-9]+)/i);
-    if (!match) return res.status(400).json({ error: 'Invalid itzStream URL format' });
-
-    const resp = await fetch(url);
-    if (!resp.ok) return res.status(502).json({ error: 'Failed to fetch from itzStream' });
-
-    const buffer = Buffer.from(await resp.arrayBuffer());
-    const inputPath = path.join(uploadDir, crypto.randomUUID() + '.mp4');
-    fs.writeFileSync(inputPath, buffer);
-
-    const outName = crypto.randomUUID() + '.mp4';
-    const outputPath = path.join(processedDir, outName);
-
-    await patchVideo(inputPath, outputPath, !!encode);
-    fs.unlink(inputPath, () => {});
-
-    res.download(outputPath, 'stream-video-krynox.mp4', (err) => {
-      if (err && !res.headersSent) res.status(500).json({ error: 'Download failed' });
-      fs.unlink(outputPath, () => {});
-    });
-  } catch (e) {
-    console.error('Link process error:', e);
-    res.status(500).json({ error: e.message || 'Link processing failed' });
-  }
+app.get('/api/download/:file', (req, res) => {
+  const filepath = path.join(processedDir, req.params.file);
+  if (!fs.existsSync(filepath)) return res.status(404).json({ error: 'File not found' });
+  res.setHeader('Content-Type', 'video/mp4');
+  res.setHeader('Content-Disposition', 'attachment; filename="krynox-video.mp4"');
+  const stream = fs.createReadStream(filepath);
+  stream.pipe(res);
+  stream.on('end', () => fs.unlink(filepath, () => {}));
 });
 
 app.listen(PORT, '0.0.0.0', () => {

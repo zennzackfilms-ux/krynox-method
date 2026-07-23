@@ -88,16 +88,16 @@ async function uploadFile(file, encode) {
 
   const resp = await fetch('/api/process', { method: 'POST', body: formData });
   if (!resp.ok) { const err = await resp.json().catch(()=>({})); throw new Error(err.error || 'Upload failed'); }
-  return resp.blob();
+  return resp.json();
 }
 
 // ─── Process File ───
 async function processFile(file, encode) {
   showProgress('Applying Krynox patch...', 'Reading video metadata');
   try {
-    const blob = await uploadFile(file, encode);
+    const data = await uploadFile(file, encode);
     showProgress('Finalizing...', 'Almost done');
-    showResult(blob, file.name);
+    showResult(data, file.name);
   } catch (e) {
     showErrorState(e.message);
   }
@@ -113,9 +113,9 @@ async function processLink(link) {
       body: JSON.stringify({ url: link, encode: false })
     });
     if (!resp.ok) { const err = await resp.json().catch(()=>({})); throw new Error(err.error || 'Failed to process link'); }
-    const blob = await resp.blob();
+    const data = await resp.json();
     showProgress('Applying Krynox patch...', 'Optimizing metadata');
-    showResult(blob, 'stream-video.mp4');
+    showResult(data, 'stream-video.mp4');
   } catch (e) {
     showErrorState(e.message);
   }
@@ -149,7 +149,7 @@ function showProgress(status, detail) {
   window._progressInterval = interval;
 }
 
-function showResult(blob, filename) {
+function showResult(data, filename) {
   clearInterval(window._progressInterval);
   document.getElementById('progressFill').style.width = '100%';
   document.getElementById('progressText').textContent = 'Complete!';
@@ -158,27 +158,17 @@ function showResult(blob, filename) {
   setTimeout(() => {
     document.getElementById('progressPanel').classList.add('hidden');
     document.getElementById('resultPanel').classList.remove('hidden');
-    document.getElementById('resultDesc').textContent = filename + ' \u2014 Ready for TikTok';
+    document.getElementById('resultDesc').textContent = (data.filename || filename) + ' \u2014 Ready for TikTok';
 
-    const dlName = filename.replace(/\.[^.]+$/, '') + '-krynox.mp4';
-    const url = URL.createObjectURL(blob);
-
+    const dlName = (data.filename || filename).replace(/\.[^.]+$/, '') + '-krynox.mp4';
     const dl = document.getElementById('downloadBtn');
-    dl.href = url;
-    dl.download = dlName;
+    dl.href = 'javascript:void(0)';
+    dl.onclick = (e) => {
+      e.preventDefault();
+      window.location.href = data.url;
+    };
 
-    // Auto-download
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = dlName;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
-    const isEncode = document.getElementById('encodeToggle').checked;
-    const statEl = document.getElementById(isEncode ? 'statEncoded' : 'statPatched');
-    const curr = parseInt(statEl.textContent.replace(/,/g, '')) || 0;
-    statEl.textContent = (curr + 1).toLocaleString();
+    window.location.href = data.url;
   }, 500);
 }
 
