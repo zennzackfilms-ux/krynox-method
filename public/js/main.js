@@ -1,22 +1,19 @@
-function toggleFaq(el) {
-  el.parentElement.classList.toggle('open');
-}
-
-document.querySelectorAll('.method-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.method-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    document.querySelectorAll('.upload-panel').forEach(p => p.classList.add('hidden'));
-    document.getElementById('upload' + btn.dataset.method.charAt(0).toUpperCase() + btn.dataset.method.slice(1)).classList.remove('hidden');
-    document.getElementById('resultPanel').classList.add('hidden');
+// Tabs
+document.querySelectorAll('.tab').forEach(t => {
+  t.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+    document.getElementById('tab-' + t.dataset.tab).classList.add('active');
+    hidePanel();
   });
 });
 
+// Drop zone
 const dropZone = document.getElementById('dropZone');
 const fileInput = document.getElementById('fileInput');
-const hiddenFormInput = document.getElementById('formFileInput');
-const processBtn = document.getElementById('processBtn');
-const dlFrame = document.getElementById('dlframe');
+const hiddenFile = document.getElementById('hf');
+const procBtn = document.getElementById('procBtn');
 
 dropZone.addEventListener('click', () => fileInput.click());
 dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
@@ -31,78 +28,111 @@ fileInput.addEventListener('change', () => {
 });
 
 function selectFile(file) {
-  if (!file.name.match(/\.(mp4|mov|m4v)$/i)) return showFileError('Please select an MP4, MOV, or M4V file.');
-  if (file.size > 500 * 1024 * 1024) return showFileError('File exceeds 500MB limit.');
+  if (!file.name.match(/\.(mp4|mov|m4v)$/i)) return showFileError('MP4, MOV, or M4V only');
+  if (file.size > 500 * 1024 * 1024) return showFileError('Max 500MB');
   const dt = new DataTransfer();
   dt.items.add(file);
-  hiddenFormInput.files = dt.files;
+  hiddenFile.files = dt.files;
   dropZone.classList.add('has-file');
-  dropZone.querySelector('.drop-text').textContent = file.name;
-  dropZone.querySelector('.drop-hint').textContent = (file.size / 1024 / 1024).toFixed(1) + ' MB';
-  processBtn.disabled = false;
-  processBtn.innerHTML = 'Patch Video';
+  document.getElementById('dropMsg').textContent = file.name;
+  dropZone.querySelector('.drop-sub').textContent = (file.size / 1024 / 1024).toFixed(1) + ' MB';
+  procBtn.disabled = false;
+  procBtn.textContent = 'Patch Video';
 }
 
 function showFileError(msg) {
   dropZone.classList.remove('has-file');
-  dropZone.querySelector('.drop-text').textContent = msg;
-  dropZone.querySelector('.drop-hint').textContent = 'Try a different file';
-  processBtn.disabled = true;
+  document.getElementById('dropMsg').textContent = msg;
+  dropZone.querySelector('.drop-sub').textContent = 'Try a different file';
+  procBtn.disabled = true;
   setTimeout(() => {
-    dropZone.querySelector('.drop-text').textContent = 'Drop your video here or click to browse';
-    dropZone.querySelector('.drop-hint').textContent = 'MP4, MOV, M4V \u2022 Maximum 500MB';
-  }, 4000);
+    document.getElementById('dropMsg').innerHTML = 'Drop video or <u>click</u> to browse';
+    dropZone.querySelector('.drop-sub').textContent = 'MP4 / MOV \u2022 max 500MB';
+  }, 3000);
 }
 
-processBtn.addEventListener('click', () => {
-  if (!hiddenFormInput.files.length) return;
-  const encode = document.getElementById('encodeToggle').checked;
-  document.getElementById('formEncode').value = encode ? '1' : '0';
-  showProgress(encode);
-  document.getElementById('uploadForm').submit();
-  const delay = encode ? 240000 : 2000;
+// Process
+procBtn.addEventListener('click', () => {
+  if (!hiddenFile.files.length) return;
+  document.getElementById('he').value = document.getElementById('encToggle').checked ? '1' : '0';
+  showProgress(document.getElementById('encToggle').checked);
+  document.getElementById('upForm').submit();
+  const delay = document.getElementById('encToggle').checked ? 240000 : 2000;
   setTimeout(() => {
     clearInterval(window._prog);
-    document.getElementById('progressFill').style.width = '100%';
-    document.getElementById('progressPanel').classList.add('hidden');
-    document.getElementById('resultPanel').classList.remove('hidden');
+    document.getElementById('barFill').style.width = '100%';
+    hideProg();
+    showResult();
   }, delay);
 });
 
-function showProgress(encode) {
-  document.querySelector('.upload-panel:not(.hidden)').classList.add('hidden');
-  document.getElementById('progressPanel').classList.remove('hidden');
-  document.getElementById('resultPanel').classList.add('hidden');
-  document.getElementById('progressText').textContent = encode ? 'Encoding video (2-3 min)...' : 'Patching video...';
+// Link btn
+document.getElementById('linkBtn').addEventListener('click', () => {
+  const link = document.getElementById('linkInput').value.trim();
+  if (!link) return;
+  showProgress(false);
+  document.getElementById('progTxt').textContent = 'Fetching link...';
+  setTimeout(() => {
+    clearInterval(window._prog);
+    hideProg();
+    showResult();
+  }, 2000);
+});
+
+// Progress / Result
+function showProgress(enc) {
+  hidePanel();
+  document.getElementById('progPanel').classList.remove('hidden');
+  document.getElementById('progTxt').textContent = enc ? 'Encoding (2-3 min)...' : 'Patching...';
+  document.getElementById('progSub').textContent = enc ? 'This takes a while' : '~10 seconds';
   let sec = 0, pct = 0;
   window._prog = setInterval(() => {
     sec++;
-    document.getElementById('progressTime').textContent = sec + 's elapsed';
-    if (pct < 75) {
-      pct += Math.random() * 3 + 0.5;
-      document.getElementById('progressFill').style.width = Math.min(pct, 75) + '%';
+    if (pct < 80) {
+      pct += Math.random() * 2 + 0.5;
+      document.getElementById('barFill').style.width = Math.min(pct, 80) + '%';
     }
   }, 1000);
 }
 
-const statObserver = new IntersectionObserver(entries => {
-  entries.forEach(e => {
-    if (e.isIntersecting) {
-      document.querySelectorAll('.stat-num[id^="stat"]').forEach(el => {
-        if (el.dataset.animated) return;
-        el.dataset.animated = '1';
-        const target = parseInt(el.textContent.replace(/,/g, ''));
-        if (target < 100) return;
-        const step = Math.ceil(target / 60);
-        let curr = 0;
-        setInterval(() => {
-          curr += step;
-          if (curr >= target) { curr = target; clearInterval(this); }
-          el.textContent = curr.toLocaleString();
-        }, 20);
-      });
-    }
-  });
-}, { threshold: .3 });
-const heroStats = document.querySelector('.hero-stats');
-if (heroStats) statObserver.observe(heroStats);
+function hideProg() {
+  document.getElementById('progPanel').classList.add('hidden');
+  if (window._prog) clearInterval(window._prog);
+}
+
+function showResult() {
+  document.getElementById('resPanel').classList.remove('hidden');
+}
+
+function hidePanel() {
+  document.getElementById('progPanel').classList.add('hidden');
+  document.getElementById('resPanel').classList.add('hidden');
+}
+
+function resetAll() {
+  hidePanel();
+  document.getElementById('barFill').style.width = '0%';
+  document.querySelectorAll('.tab-content').forEach(x => x.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+  document.querySelector('.tab[data-tab="file"]').classList.add('active');
+  document.getElementById('tab-file').classList.add('active');
+  dropZone.classList.remove('has-file');
+  document.getElementById('dropMsg').innerHTML = 'Drop video or <u>click</u> to browse';
+  dropZone.querySelector('.drop-sub').textContent = 'MP4 / MOV \u2022 max 500MB';
+  procBtn.disabled = true;
+  procBtn.textContent = 'Select a file';
+  document.getElementById('linkInput').value = '';
+}
+
+// Animated stats
+document.querySelectorAll('.stat-num[id^="stat"]').forEach(el => {
+  const target = parseInt(el.textContent.replace(/,/g, ''));
+  if (target < 100) return;
+  const step = Math.ceil(target / 60);
+  let curr = 0;
+  const si = setInterval(() => {
+    curr += step;
+    if (curr >= target) { curr = target; clearInterval(si); }
+    el.textContent = curr.toLocaleString();
+  }, 20);
+});

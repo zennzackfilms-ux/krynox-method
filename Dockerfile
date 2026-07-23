@@ -7,5 +7,7 @@ COPY package.json ./
 RUN npm install --production
 COPY . .
 
+ENV NODE_OPTIONS="--max-old-space-size=384"
+
 EXPOSE 3002
 CMD ["node", "server.js"]
