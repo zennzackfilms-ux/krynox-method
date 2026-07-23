@@ -155,28 +155,15 @@ function showResult(data, filename) {
   document.getElementById('progressText').textContent = 'Complete!';
   document.getElementById('progressDetail').textContent = '';
 
-  setTimeout(() => {
-    document.getElementById('progressPanel').classList.add('hidden');
-    document.getElementById('resultPanel').classList.remove('hidden');
-    document.getElementById('resultDesc').textContent = (data.filename || filename) + ' \u2014 Ready for TikTok';
+  document.getElementById('progressPanel').classList.add('hidden');
+  document.getElementById('resultPanel').classList.remove('hidden');
+  document.getElementById('resultDesc').textContent = (data.filename || filename) + ' \u2014 Ready for TikTok';
 
-    const dlName = (data.filename || filename).replace(/\.[^.]+$/, '') + '-krynox.mp4';
-    const dl = document.getElementById('downloadBtn');
-    dl.addEventListener('click', (e) => {
-      e.preventDefault();
-      const a = document.createElement('a');
-      a.href = data.url;
-      a.download = dlName;
-      a.click();
-    });
+  const dl = document.getElementById('downloadBtn');
+  dl.href = data.url;
+  dl.download = (data.filename || filename).replace(/\.[^.]+$/, '') + '-krynox.mp4';
 
-    const a = document.createElement('a');
-    a.href = data.url;
-    a.download = dlName;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-  }, 500);
+  window.location.href = data.url;
 }
 
 function showErrorState(msg) {
