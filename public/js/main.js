@@ -160,9 +160,20 @@ function showResult(blob, filename) {
     document.getElementById('resultPanel').classList.remove('hidden');
     document.getElementById('resultDesc').textContent = filename + ' \u2014 Ready for TikTok';
 
+    const dlName = filename.replace(/\.[^.]+$/, '') + '-krynox.mp4';
+    const url = URL.createObjectURL(blob);
+
     const dl = document.getElementById('downloadBtn');
-    dl.href = URL.createObjectURL(blob);
-    dl.download = filename.replace(/\.[^.]+$/, '') + '-krynox.mp4';
+    dl.href = url;
+    dl.download = dlName;
+
+    // Auto-download
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = dlName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 
     const isEncode = document.getElementById('encodeToggle').checked;
     const statEl = document.getElementById(isEncode ? 'statEncoded' : 'statPatched');
