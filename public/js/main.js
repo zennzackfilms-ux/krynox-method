@@ -56,20 +56,24 @@ function showFileError(msg) {
 
 processBtn.addEventListener('click', () => {
   if (!hiddenFormInput.files.length) return;
-  dlFrame.onload = () => {
+  const encode = document.getElementById('encodeToggle').checked;
+  document.getElementById('formEncode').value = encode ? '1' : '0';
+  showProgress(encode);
+  document.getElementById('uploadForm').submit();
+  const delay = encode ? 240000 : 2000;
+  setTimeout(() => {
     clearInterval(window._prog);
+    document.getElementById('progressFill').style.width = '100%';
     document.getElementById('progressPanel').classList.add('hidden');
     document.getElementById('resultPanel').classList.remove('hidden');
-  };
-  document.getElementById('formEncode').value = document.getElementById('encodeToggle').checked ? '1' : '0';
-  showProgress();
-  document.getElementById('uploadForm').submit();
+  }, delay);
 });
 
-function showProgress() {
+function showProgress(encode) {
   document.querySelector('.upload-panel:not(.hidden)').classList.add('hidden');
   document.getElementById('progressPanel').classList.remove('hidden');
   document.getElementById('resultPanel').classList.add('hidden');
+  document.getElementById('progressText').textContent = encode ? 'Encoding video (2-3 min)...' : 'Patching video...';
   let sec = 0, pct = 0;
   window._prog = setInterval(() => {
     sec++;
