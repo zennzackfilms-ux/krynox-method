@@ -58,10 +58,18 @@ app.get('/api/download/:file', (req, res) => {
   if (!fs.existsSync(filepath)) return res.status(404).json({ error: 'File not found' });
   res.setHeader('Content-Type', 'video/mp4');
   res.setHeader('Content-Disposition', 'attachment; filename="krynox-video.mp4"');
-  const stream = fs.createReadStream(filepath);
-  stream.pipe(res);
-  stream.on('end', () => fs.unlink(filepath, () => {}));
+  fs.createReadStream(filepath).pipe(res);
 });
+
+setInterval(() => {
+  const cutoff = Date.now() - 3600000;
+  for (const f of fs.readdirSync(processedDir)) {
+    try {
+      const p = path.join(processedDir, f);
+      if (fs.statSync(p).mtimeMs < cutoff) fs.unlinkSync(p);
+    } catch {}
+  }
+}, 3600000);
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log('Krynox Method server running on port ' + PORT);
