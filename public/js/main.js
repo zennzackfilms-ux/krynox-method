@@ -163,7 +163,7 @@ function showResult(data, filename) {
   dl.href = data.url;
   dl.download = (data.filename || filename).replace(/\.[^.]+$/, '') + '-krynox.mp4';
 
-  window.location.href = data.url;
+  location.href = data.url;
 }
 
 function showErrorState(msg) {
