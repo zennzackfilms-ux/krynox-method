@@ -209,6 +209,7 @@ section{padding:80px 24px}
 .progress-bar-bg{height:6px;background:rgba(255,255,255,.05);border-radius:6px;overflow:hidden;margin-bottom:12px}
 .progress-bar-fill{height:100%;width:0%;background:linear-gradient(90deg,#8b5cf6,#6366f1);border-radius:6px;transition:width .5s ease}
 .progress-detail{font-size:.85rem;color:#6b6b8a}
+.progress-time{font-size:.8rem;color:#4a4a6a;margin-top:8px;font-variant-numeric:tabular-nums}
 
 /* ─── RESULT ─── */
 .result-panel{background:rgba(255,255,255,.02);border:1px solid rgba(74,222,128,.2);border-radius:20px;padding:40px;text-align:center}

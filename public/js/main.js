@@ -128,14 +128,24 @@ function showProgress(status, detail) {
   document.getElementById('resultPanel').classList.add('hidden');
   document.getElementById('progressText').textContent = status;
   document.getElementById('progressDetail').textContent = detail || '';
+  document.getElementById('progressTime').classList.remove('hidden');
 
   let p = 0;
+  const start = Date.now();
   const interval = setInterval(() => {
-    if (p < 90) {
-      p += Math.random() * 8 + 1;
-      document.getElementById('progressFill').style.width = Math.min(p, 90) + '%';
+    const elapsed = Math.floor((Date.now() - start) / 1000);
+    if (p < 70) {
+      p += Math.random() * 2 + 0.3;
+      document.getElementById('progressFill').style.width = Math.min(p, 70) + '%';
     }
-  }, 600);
+    document.getElementById('progressTime').textContent = elapsed + 's elapsed';
+    if (elapsed > 30 && p < 70) {
+      document.getElementById('progressDetail').textContent = 'Still processing, larger files take longer...';
+    }
+    if (elapsed > 120) {
+      document.getElementById('progressDetail').textContent = 'This is taking unusually long. The server may be waking up from sleep.';
+    }
+  }, 1000);
   window._progressInterval = interval;
 }
 
