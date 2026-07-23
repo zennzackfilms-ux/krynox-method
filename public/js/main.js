@@ -88,16 +88,16 @@ async function uploadFile(file, encode) {
 
   const resp = await fetch('/api/process', { method: 'POST', body: formData });
   if (!resp.ok) { const err = await resp.json().catch(()=>({})); throw new Error(err.error || 'Upload failed'); }
-  return resp.json();
+  return resp.blob();
 }
 
 // ─── Process File ───
 async function processFile(file, encode) {
   showProgress('Applying Krynox patch...', 'Reading video metadata');
   try {
-    const data = await uploadFile(file, encode);
+    const blob = await uploadFile(file, encode);
     showProgress('Finalizing...', 'Almost done');
-    showResult(data, file.name);
+    showResult(blob, file.name);
   } catch (e) {
     showErrorState(e.message);
   }
@@ -113,9 +113,9 @@ async function processLink(link) {
       body: JSON.stringify({ url: link, encode: false })
     });
     if (!resp.ok) { const err = await resp.json().catch(()=>({})); throw new Error(err.error || 'Failed to process link'); }
-    const data = await resp.json();
+    const blob = await resp.blob();
     showProgress('Applying Krynox patch...', 'Optimizing metadata');
-    showResult(data, 'stream-video.mp4');
+    showResult(blob, 'stream-video.mp4');
   } catch (e) {
     showErrorState(e.message);
   }
@@ -139,7 +139,7 @@ function showProgress(status, detail) {
   window._progressInterval = interval;
 }
 
-function showResult(data, filename) {
+function showResult(blob, filename) {
   clearInterval(window._progressInterval);
   document.getElementById('progressFill').style.width = '100%';
   document.getElementById('progressText').textContent = 'Complete!';
@@ -148,13 +148,12 @@ function showResult(data, filename) {
   setTimeout(() => {
     document.getElementById('progressPanel').classList.add('hidden');
     document.getElementById('resultPanel').classList.remove('hidden');
-    document.getElementById('resultDesc').textContent = (data.filename || filename) + ' \u2014 Ready for TikTok';
+    document.getElementById('resultDesc').textContent = filename + ' \u2014 Ready for TikTok';
 
     const dl = document.getElementById('downloadBtn');
-    dl.href = data.url;
-    dl.download = (data.filename || filename).replace(/\.[^.]+$/, '') + '-krynox.mp4';
+    dl.href = URL.createObjectURL(blob);
+    dl.download = filename.replace(/\.[^.]+$/, '') + '-krynox.mp4';
 
-    // Update stats
     const isEncode = document.getElementById('encodeToggle').checked;
     const statEl = document.getElementById(isEncode ? 'statEncoded' : 'statPatched');
     const curr = parseInt(statEl.textContent.replace(/,/g, '')) || 0;
