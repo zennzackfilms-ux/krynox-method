@@ -70,10 +70,14 @@ function showProgress() {
   document.querySelector('.upload-panel:not(.hidden)').classList.add('hidden');
   document.getElementById('progressPanel').classList.remove('hidden');
   document.getElementById('resultPanel').classList.add('hidden');
-  let sec = 0;
+  let sec = 0, pct = 0;
   window._prog = setInterval(() => {
     sec++;
     document.getElementById('progressTime').textContent = sec + 's elapsed';
+    if (pct < 75) {
+      pct += Math.random() * 3 + 0.5;
+      document.getElementById('progressFill').style.width = Math.min(pct, 75) + '%';
+    }
   }, 1000);
 }
 
