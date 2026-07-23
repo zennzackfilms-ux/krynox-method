@@ -3,3 +3,5 @@ uploads/
 processed/
 *.log
 .DS_Store
+
+extension.zip
