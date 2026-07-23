@@ -1,4 +1,3 @@
-// Tabs
 document.querySelectorAll('.tab').forEach(t => {
   t.addEventListener('click', () => {
     document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
@@ -9,11 +8,11 @@ document.querySelectorAll('.tab').forEach(t => {
   });
 });
 
-// Drop zone
 const dropZone = document.getElementById('dropZone');
 const fileInput = document.getElementById('fileInput');
 const hiddenFile = document.getElementById('hf');
 const procBtn = document.getElementById('procBtn');
+let currentFile = null;
 
 dropZone.addEventListener('click', () => fileInput.click());
 dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
@@ -30,6 +29,7 @@ fileInput.addEventListener('change', () => {
 function selectFile(file) {
   if (!file.name.match(/\.(mp4|mov|m4v)$/i)) return showFileError('MP4, MOV, or M4V only');
   if (file.size > 500 * 1024 * 1024) return showFileError('Max 500MB');
+  currentFile = file;
   const dt = new DataTransfer();
   dt.items.add(file);
   hiddenFile.files = dt.files;
@@ -51,22 +51,41 @@ function showFileError(msg) {
   }, 3000);
 }
 
-// Process
-procBtn.addEventListener('click', () => {
-  if (!hiddenFile.files.length) return;
-  document.getElementById('he').value = document.getElementById('encToggle').checked ? '1' : '0';
-  showProgress(document.getElementById('encToggle').checked);
-  document.getElementById('upForm').submit();
-  const delay = document.getElementById('encToggle').checked ? 240000 : 2000;
-  setTimeout(() => {
+procBtn.addEventListener('click', async () => {
+  if (!currentFile) return;
+  const enc = document.getElementById('encToggle').checked;
+  document.getElementById('he').value = enc ? '1' : '0';
+  showProgress(enc);
+
+  const fd = new FormData(document.getElementById('upForm'));
+
+  try {
+    const res = await fetch('/api/process', { method: 'POST', body: fd });
+    if (!res.ok) throw new Error(await res.text());
+    const blob = await res.blob();
+    const dlName = currentFile.name.replace(/\.[^.]+$/, '') + (enc ? '-encoded-krynox' : '-krynox') + currentFile.name.match(/\.[^.]+$/)?.[0] || '.mp4';
+
     clearInterval(window._prog);
     document.getElementById('barFill').style.width = '100%';
-    hideProg();
-    showResult();
-  }, delay);
+
+    const url = URL.createObjectURL(blob);
+    const dl = document.getElementById('dlBtn');
+    dl.href = url;
+    dl.download = dlName;
+    dl.textContent = '\u2B07 Download ' + dlName;
+    dl.onclick = () => setTimeout(() => URL.revokeObjectURL(url), 10000);
+
+    setTimeout(() => {
+      hideProg();
+      showResult();
+    }, 500);
+  } catch (err) {
+    clearInterval(window._prog);
+    document.getElementById('progTxt').textContent = 'Error';
+    document.getElementById('progSub').textContent = err.message;
+  }
 });
 
-// Link btn
 document.getElementById('linkBtn').addEventListener('click', () => {
   const link = document.getElementById('linkInput').value.trim();
   if (!link) return;
@@ -79,7 +98,6 @@ document.getElementById('linkBtn').addEventListener('click', () => {
   }, 2000);
 });
 
-// Progress / Result
 function showProgress(enc) {
   hidePanel();
   document.getElementById('progPanel').classList.remove('hidden');
@@ -110,6 +128,7 @@ function hidePanel() {
 }
 
 function resetAll() {
+  currentFile = null;
   hidePanel();
   document.getElementById('barFill').style.width = '0%';
   document.querySelectorAll('.tab-content').forEach(x => x.classList.remove('active'));
@@ -122,17 +141,7 @@ function resetAll() {
   procBtn.disabled = true;
   procBtn.textContent = 'Select a file';
   document.getElementById('linkInput').value = '';
+  const dl = document.getElementById('dlBtn');
+  dl.href = '#';
+  dl.textContent = 'Download';
 }
-
-// Animated stats
-document.querySelectorAll('.stat-num[id^="stat"]').forEach(el => {
-  const target = parseInt(el.textContent.replace(/,/g, ''));
-  if (target < 100) return;
-  const step = Math.ceil(target / 60);
-  let curr = 0;
-  const si = setInterval(() => {
-    curr += step;
-    if (curr >= target) { curr = target; clearInterval(si); }
-    el.textContent = curr.toLocaleString();
-  }, 20);
-});
