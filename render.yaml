@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: krynox-method
+    env: docker
+    region: frankfurt
+    plan: free
+    healthCheckPath: /
+    domains:
+      - method.evosmp.eu
