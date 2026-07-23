@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Krynox x Zenn Method — TikTok Quality Preserver</title>
+<meta name="description" content="Upload your videos and preserve original quality on TikTok. 100% free forever.">
+<link rel="stylesheet" href="css/style.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="noise"></div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="#" class="logo">Krynox <span>×</span> Zenn</a>
+    <div class="nav-links">
+      <a href="#upload">Upload</a>
+      <a href="#how">Guide</a>
+      <a href="#faq">FAQ</a>
+      <a href="https://discord.gg/wTED7sYAEW" target="_blank" class="nav-discord">Discord</a>
+    </div>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-content">
+
+    <h1 class="hero-title">
+      <span class="gradient-text">Krynox x Zenn</span>
+      <span class="hero-sub">TikTok Quality Method</span>
+    </h1>
+    <p class="hero-desc">Upload up to <strong>1080p 120fps</strong> without quality loss. Preserve your video's original quality when uploading to TikTok.</p>
+    <div class="hero-cta">
+      <a href="#upload" class="btn btn-primary">Start Now</a>
+      <a href="#how" class="btn btn-outline">How It Works</a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat">
+        <span class="stat-num" id="statPatched">0</span>
+        <span class="stat-label">Patched Videos</span>
+      </div>
+      <div class="stat">
+        <span class="stat-num" id="statEncoded">0</span>
+        <span class="stat-label">Encoded Videos</span>
+      </div>
+      <div class="stat">
+        <span class="stat-num" id="statOnline">3,018</span>
+        <span class="stat-label">Online Now</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="upload-section" id="upload">
+  <div class="section-header">
+    <h2>Upload Your Video</h2>
+    <p>Get your TikTok-ready file in seconds</p>
+  </div>
+
+  <div class="upload-method-toggle">
+    <button class="method-btn active" data-method="file">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      Upload File
+    </button>
+    <button class="method-btn" data-method="link">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+      itzStream Link
+    </button>
+  </div>
+
+  <div class="upload-panel" id="uploadFile">
+    <div class="drop-zone" id="dropZone">
+      <div class="drop-content">
+        <svg class="upload-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        <p class="drop-text">Drop your video here or <span class="drop-link">click to browse</span></p>
+        <p class="drop-hint">MP4, MOV, M4V &bull; Maximum 500MB</p>
+      </div>
+      <input type="file" id="fileInput" accept=".mp4,.mov,.m4v,video/mp4,video/quicktime" hidden>
+    </div>
+
+    <div class="encoding-toggle">
+      <label class="toggle-label">
+        <span class="toggle-text">
+          <strong>Enable TikTok-Optimized Encoding</strong>
+          <span class="toggle-desc">Only enable if your video needs re-encoding</span>
+        </span>
+        <label class="switch">
+          <input type="checkbox" id="encodeToggle">
+          <span class="slider"></span>
+        </label>
+      </label>
+      <div class="toggle-info">
+        <p><strong>Enable if:</strong> Your video isn't already optimized (not encoded with HandBrake/Adobe Media Encoder), OR if it's not MP4 format.</p>
+        <p><strong>Keep disabled if:</strong> You already used HandBrake/Adobe Encoder. The patch alone works fine.</p>
+        <p class="info-note">Encoding takes 2-3 minutes longer.</p>
+      </div>
+    </div>
+
+    <button class="btn btn-primary btn-full process-btn" id="processBtn" disabled>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+      Select a file first
+    </button>
+  </div>
+
+  <div class="upload-panel hidden" id="uploadLink">
+    <div class="link-input-group">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+      <input type="text" id="streamLink" placeholder="https://video.itzcrih.it/v/...">
+    </div>
+    <p class="link-hint">Paste your itzStream video link &mdash; we'll patch it for TikTok</p>
+    <button class="btn btn-primary btn-full process-btn" id="processLinkBtn">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+      Patch Video
+    </button>
+  </div>
+
+  <div class="progress-panel hidden" id="progressPanel">
+    <div class="progress-status">
+      <div class="spinner"></div>
+      <span id="progressText">Processing your video...</span>
+    </div>
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" id="progressFill"></div>
+    </div>
+    <p class="progress-detail" id="progressDetail">This usually takes ~10 seconds</p>
+  </div>
+
+  <div class="result-panel hidden" id="resultPanel">
+    <div class="result-icon">✓</div>
+    <h3 class="result-title">Your video is ready!</h3>
+    <p class="result-desc" id="resultDesc">Optimized for TikTok upload</p>
+    <a id="downloadBtn" class="btn btn-primary" download>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Download
+    </a>
+    <button class="btn btn-outline" onclick="resetUpload()">Process another video</button>
+  </div>
+</section>
+
+<section class="how-section" id="how">
+  <div class="section-header">
+    <h2>How It Works</h2>
+    <p>Three simple steps to preserve your TikTok quality</p>
+  </div>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">01</div>
+      <h3>Upload Video</h3>
+      <p>Upload your MP4 or MOV file (max 500MB) or paste an itzStream link.</p>
+    </div>
+    <div class="step-arrow">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+    </div>
+    <div class="step">
+      <div class="step-num">02</div>
+      <h3>Apply Enhancement</h3>
+      <p>We apply the proprietary Krynox optimization + optional encoding (OFF by default).</p>
+    </div>
+    <div class="step-arrow">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+    </div>
+    <div class="step">
+      <div class="step-num">03</div>
+      <h3>Download & Post</h3>
+      <p>Download your optimized video and upload to TikTok Web (desktop browser).</p>
+    </div>
+  </div>
+</section>
+
+<section class="quick-reminder">
+  <div class="reminder-content">
+    <h3>Quick Reminder</h3>
+    <ul>
+      <li><span>Use TikTok Web (desktop)</span></li>
+      <li><span>No editing/cropping/music added here</span></li>
+      <li><span>Encoding is OFF by default</span></li>
+      <li><span>Tag <strong>@krynoxmethod</strong> to support</span></li>
+    </ul>
+  </div>
+</section>
+
+<section class="faq-section" id="faq">
+  <div class="section-header">
+    <h2>Frequently Asked Questions</h2>
+  </div>
+  <div class="faq-list">
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        <span>Why does TikTok compress my videos?</span>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="faq-a">TikTok applies compression to save bandwidth, reducing quality especially for high-motion content. Our patcher preserves quality by modifying video metadata to match TikTok's preferred encoding profile.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        <span>When should I enable encoding?</span>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="faq-a">Enable ONLY IF: You didn't use HandBrake/Adobe Encoder. Keep OFF if: You already optimized it. Encoding takes 2-3 minutes.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        <span>Does this work on new accounts?</span>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="faq-a">Yes! Works regardless of account age or region. It's a technical enhancement, not account-based.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        <span>Why use TikTok Web?</span>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="faq-a">Desktop browser is the ONLY way. Mobile apps re-compress differently. Also disable VPNs.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        <span>What resolutions work?</span>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="faq-a">Everything works because we removed all limits when the optimized encoder is off. Quality and compression are on you.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        <span>How long does processing take?</span>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="faq-a">Encoder OFF: ~5-10 seconds (90% faster). Encoder ON: 2-3 minutes (may appear stuck at 100% &mdash; be patient).</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        <span>What's the correct workflow?</span>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="faq-a">Topaz &rarr; Render &rarr; HandBrake &rarr; Our Website &rarr; Upload to TikTok. Processing here must be your final step.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        <span>Is this really free?</span>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="faq-a">YES, 100% FREE FOREVER. If anyone charges you, you're being scammed.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        <span>How can I support?</span>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="faq-a">Tag <strong>@krynoxmethod</strong> in your video description or mention <strong>method.evosmp.eu</strong>. That's all!</div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="logo">Krynox <span>×</span> Zenn</div>
+      <p>TikTok quality preservation method &mdash; 100% free forever.</p>
+    </div>
+    <div class="footer-links">
+      <a href="#">Home</a>
+      <a href="#upload">Upload</a>
+      <a href="#how">Guide</a>
+      <a href="#faq">FAQ</a>
+      <a href="https://discord.gg/wTED7sYAEW" target="_blank">Discord</a>
+    </div>
+    <div class="footer-copy">&copy; 2026 Krynox x Zenn &mdash; method.evosmp.eu</div>
+  </div>
+</footer>
+
+<script src="js/main.js"></script>
+</body>
+</html>

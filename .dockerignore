@@ -1,0 +1,6 @@
+node_modules
+uploads
+processed
+start.bat
+stop.bat
+.git

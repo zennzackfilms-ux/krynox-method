@@ -1,0 +1,27 @@
+RewriteEngine On
+
+# Serve static files directly
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteRule . - [L]
+
+# API routes -> PHP backends
+RewriteRule ^api/process$ process.php [L,QSA]
+RewriteRule ^api/process-link$ process-link.php [L,QSA]
+RewriteRule ^api/download/(.+)$ download.php?file=$1 [L,QSA]
+
+# Everything else -> index.html
+RewriteRule . index.html [L]
+
+# Security
+<FilesMatch "\.(sql|log|ini|env)$">
+  Require all denied
+</FilesMatch>
+<FilesMatch "^(process|process-link|download)\.php$">
+  Require all granted
+</FilesMatch>
+
+# Increase upload limits
+php_value upload_max_filesize 500M
+php_value post_max_size 512M
+php_value max_execution_time 300
+php_value max_input_time 300
