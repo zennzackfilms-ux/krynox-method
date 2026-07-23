@@ -2,6 +2,7 @@ const { exec } = require('child_process');
 const fs = require('fs');
 const util = require('util');
 const execP = util.promisify(exec);
+const fsp = fs.promises;
 
 const FFMPEG_PATHS = [
   'ffmpeg',
@@ -25,7 +26,7 @@ async function checkFfmpeg() {
 
 function q(s) { return '"' + s + '"'; }
 
-const CHUNK = 65536;
+const SCAN_CHUNK = 262144;
 
 async function patchVideo(inputPath, outputPath, encode = false) {
   if (encode) {
@@ -49,79 +50,55 @@ async function patchVideo(inputPath, outputPath, encode = false) {
   }
 }
 
-function quickPatch(inputPath, outputPath) {
-  return new Promise((resolve, reject) => {
-    const fd = fs.openSync(inputPath, 'r');
-    const outFd = fs.openSync(outputPath, 'w');
-    const fileLen = fs.fstatSync(fd).size;
-    let moovStart = -1, moovSize = 0;
+async function quickPatch(inputPath, outputPath) {
+  // Step 1: fast OS-level copy (kernel buffered, no Node memory)
+  await fsp.copyFile(inputPath, outputPath);
 
-    // Phase 1: scan chunks to find moov box offset
-    function scan(offset, cb) {
-      if (offset >= fileLen) return cb(new Error('No moov box found'));
-      const buf = Buffer.alloc(Math.min(CHUNK, fileLen - offset));
-      fs.read(fd, buf, 0, buf.length, offset, (err, n) => {
-        if (err) return cb(err);
-        const s = buf.subarray(0, n);
-        for (let i = 0; i + 8 <= n; i++) {
-          if (s[i+4]===0x6d && s[i+5]===0x6f && s[i+6]===0x6f && s[i+7]===0x76) {
-            const sz = s.readUInt32BE(i);
-            if (sz >= 8 && offset + i + sz <= fileLen) {
-              moovStart = offset + i;
-              moovSize = sz;
-              return cb(null);
-            }
+  // Step 2: open copy in read-write mode, find & patch moov in-place
+  const fd = await fsp.open(outputPath, 'r+');
+  try {
+    const stat = await fd.stat();
+    const fileLen = stat.size;
+
+    // Scan for moov box using 256KB chunks
+    let moovStart = -1;
+    let moovSize = 0;
+    let offset = 0;
+
+    while (offset < fileLen) {
+      const n = Math.min(SCAN_CHUNK, fileLen - offset);
+      const buf = Buffer.alloc(n);
+      const { bytesRead } = await fd.read(buf, 0, n, offset);
+      if (bytesRead === 0) break;
+
+      for (let i = 0; i + 8 <= bytesRead; i++) {
+        if (buf[i+4]===0x6d && buf[i+5]===0x6f && buf[i+6]===0x6f && buf[i+7]===0x76) {
+          const sz = buf.readUInt32BE(i);
+          if (sz >= 8 && offset + i + sz <= fileLen) {
+            moovStart = offset + i;
+            moovSize = sz;
+            break;
           }
         }
-        scan(offset + n, cb);
-      });
+      }
+      if (moovStart !== -1) break;
+      offset += bytesRead;
     }
 
-    scan(0, (err) => {
-      if (err) { try { fs.closeSync(fd) } catch {} try { fs.closeSync(outFd) } catch {} return reject(err); }
+    if (moovStart === -1) throw new Error('No moov box found');
 
-      // Phase 2: load only the moov box into memory, patch it
-      const moovBuf = Buffer.alloc(moovSize);
-      fs.read(fd, moovBuf, 0, moovSize, moovStart, (err2) => {
-        if (err2) { try { fs.closeSync(fd) } catch {} try { fs.closeSync(outFd) } catch {} return reject(err2); }
+    // Read only the moov box into memory (typically < 1MB)
+    const moovBuf = Buffer.alloc(moovSize);
+    await fd.read(moovBuf, 0, moovSize, moovStart);
 
-        patchMoovBuffer(moovBuf, moovSize);
+    // Patch in memory
+    patchMoovBuffer(moovBuf, moovSize);
 
-        // Phase 3: stream-copy file, replacing moov region with patched version
-        let pos = 0;
-        function copy() {
-          if (pos >= fileLen) {
-            fs.closeSync(fd); fs.closeSync(outFd);
-            return resolve();
-          }
-          // If we've reached the moov region, write patched buffer and skip past it
-          if (pos === moovStart) {
-            fs.write(outFd, moovBuf, 0, moovSize, pos, (err3) => {
-              if (err3) { cleanup(); return reject(err3); }
-              pos = moovStart + moovSize;
-              copy();
-            });
-            return;
-          }
-          // If we're before the moov region, write up to moovStart or CHUNK
-          const nextMoov = pos < moovStart ? moovStart : fileLen;
-          const n = Math.min(CHUNK, nextMoov - pos);
-          if (n <= 0) { fs.closeSync(fd); fs.closeSync(outFd); return resolve(); }
-          const buf = Buffer.alloc(n);
-          fs.read(fd, buf, 0, n, pos, (err3, n2) => {
-            if (err3) { cleanup(); return reject(err3); }
-            fs.write(outFd, buf.subarray(0, n2), 0, n2, pos, (err4) => {
-              if (err4) { cleanup(); return reject(err4); }
-              pos += n2;
-              copy();
-            });
-          });
-        }
-        function cleanup() { try { fs.closeSync(fd); } catch {} try { fs.closeSync(outFd); } catch {} }
-        copy();
-      });
-    });
-  });
+    // Write patched moov back in-place
+    await fd.write(moovBuf, 0, moovSize, moovStart);
+  } finally {
+    await fd.close();
+  }
 }
 
 function patchMoovBuffer(buf, len) {
