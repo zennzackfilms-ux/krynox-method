@@ -188,7 +188,6 @@ btn.onclick=()=>{
 };
 
 function compress(){
-  // Send to server via hidden iframe (bypasses CORS from file://)
   const dt=new DataTransfer();dt.items.add(cur);
   document.getElementById('efFile').files=dt.files;
   document.querySelector('.drop').classList.add('h');
@@ -197,23 +196,48 @@ function compress(){
   document.getElementById('pp').classList.remove('h');
   document.getElementById('rp').classList.add('h');
   document.getElementById('pt').textContent='Uploading to server...';
-  document.getElementById('ps').textContent='Encoding with ffmpeg (2-3 min)';
+  document.getElementById('ps').textContent='Sending file...';
   document.getElementById('bf').className='bf amber';
   let p=0,sec=0;
   window._p=setInterval(()=>{sec++;if(p<80){p+=Math.random()*1.5+0.5;document.getElementById('bf').style.width=Math.min(p,80)+'%'}
-    document.getElementById('ps').textContent='Encoding '+sec+'s... (may take 2-3 min)';},1000);
-  document.getElementById('efForm').submit();
-  // Show result after 4 min timeout
-  setTimeout(()=>{
-    clearInterval(window._p);document.getElementById('bf').style.width='100%';
+    document.getElementById('ps').textContent='Processing '+sec+'s... (up to 3 min)';},1000);
+
+  // Try fetch first (works for HTTPS pages, not from file://)
+  const fd=new FormData();
+  fd.append('video',cur);
+  fd.append('encode','1');
+  fetch('https://method.evosmp.eu/api/process',{method:'POST',body:fd}).then(r=>{
+    if(!r.ok)throw new Error();
+    return r.blob();
+  }).then(blob=>{
+    clearInterval(window._p);
+    document.getElementById('bf').style.width='100%';
+    setTimeout(()=>{
+      document.getElementById('pp').classList.add('h');
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');a.href=url;a.download=cur.name.replace(/\.[^.]+$/,'')+'-compressed-krynox.mp4';
+      a.style.display='none';document.body.appendChild(a);a.click();document.body.removeChild(a);
+      setTimeout(()=>URL.revokeObjectURL(url),10000);
+      document.getElementById('rp').classList.remove('h');
+      document.getElementById('rpTitle').textContent='Compressed & Downloaded ✓';
+      document.getElementById('rpDesc').textContent='File saved — lower MB, same quality';
+      const fb=document.getElementById('fb');fb.href=url;fb.download=cur.name.replace(/\.[^.]+$/,'')+'-compressed-krynox.mp4';fb.classList.remove('h');
+    },400);
+  }).catch(()=>{
+    // Fetch failed (CORS from file://). Use iframe + website fallback
+    clearInterval(window._p);
+    document.getElementById('bf').style.width='100%';
     setTimeout(()=>{
       document.getElementById('pp').classList.add('h');
       document.getElementById('rp').classList.remove('h');
-      document.getElementById('rpTitle').textContent='Processing Complete';
-      document.getElementById('rpDesc').textContent='Check your downloads folder for the compressed file';
+      document.getElementById('rpTitle').textContent='Open Website Instead';
+      document.getElementById('rpDesc').textContent='Your browser needs the website for compression. Click below.';
       document.getElementById('fb').classList.add('h');
-    },500);
-  },240000);
+      // Add fallback button
+      const fb2=document.getElementById('rp').querySelector('.btn.ghost');
+      fb2.insertAdjacentHTML('beforebegin','<a class="btn" href="https://method.evosmp.eu" target="_blank" style="margin-bottom:6px">🌐 Open method.evosmp.eu</a>');
+    },400);
+  });
 }
 
 function rst(){
@@ -228,6 +252,10 @@ function rst(){
   dz.querySelector('.ds').textContent='MP4 / MOV • max 500MB';
   btn.disabled=true;btn.textContent='Select a file';
   if(window._p)clearInterval(window._p);
+  // Remove any fallback buttons added by compress
+  const rp=document.getElementById('rp');
+  const extras=rp.querySelectorAll('.btn[href*="method.evosmp"]');
+  extras.forEach(e=>e.remove());
 }
 
 // Built-in patcher

@@ -67,27 +67,48 @@ btn.onclick=()=>{
 };
 
 function compress(){
-  const dt=new DataTransfer();dt.items.add(cur);
-  document.getElementById('efFile').files=dt.files;
   document.querySelector('.drop').classList.add('h');mt.classList.add('h');btn.classList.add('h');
   document.getElementById('pp').classList.remove('h');document.getElementById('rp').classList.add('h');
   document.getElementById('pt').textContent='Uploading to server...';
-  document.getElementById('ps').textContent='Encoding with ffmpeg (2-3 min)';
+  document.getElementById('ps').textContent='Sending file...';
   document.getElementById('bf').className='bf amber';
   let p=0,sec=0;
   window._p=setInterval(()=>{sec++;if(p<80){p+=Math.random()*1.5+0.5;document.getElementById('bf').style.width=Math.min(p,80)+'%'}
-    document.getElementById('ps').textContent='Encoding '+sec+'s... (2-3 min)';},1000);
-  document.getElementById('efForm').submit();
-  setTimeout(()=>{
+    document.getElementById('ps').textContent='Processing '+sec+'s... (up to 3 min)';},1000);
+
+  const fd=new FormData();
+  fd.append('video',cur);
+  fd.append('encode','1');
+  fetch('https://method.evosmp.eu/api/process',{method:'POST',body:fd}).then(r=>{
+    if(!r.ok)throw new Error('Server error');
+    return r.blob();
+  }).then(blob=>{
+    clearInterval(window._p);document.getElementById('bf').style.width='100%';
+    setTimeout(()=>{
+      document.getElementById('pp').classList.add('h');
+      const fn=cur.name.replace(/\.[^.]+$/,'')+'-compressed-krynox.mp4';
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');a.href=url;a.download=fn;a.style.display='none';
+      document.body.appendChild(a);a.click();document.body.removeChild(a);
+      setTimeout(()=>URL.revokeObjectURL(url),10000);
+      document.getElementById('rp').classList.remove('h');
+      document.getElementById('rpT').textContent='Compressed ✓';
+      document.getElementById('rpD').textContent='File saved — lower MB, same quality';
+      const fb=document.getElementById('fb');fb.href=url;fb.download=fn;fb.classList.remove('h');
+    },400);
+  }).catch(e=>{
     clearInterval(window._p);document.getElementById('bf').style.width='100%';
     setTimeout(()=>{
       document.getElementById('pp').classList.add('h');
       document.getElementById('rp').classList.remove('h');
-      document.getElementById('rpT').textContent='Processing Complete';
-      document.getElementById('rpD').textContent='Check your downloads folder for the compressed file';
+      document.getElementById('rpT').textContent='Server Unavailable';
+      document.getElementById('rpD').textContent='Could not reach the server. Try the website.';
       document.getElementById('fb').classList.add('h');
-    },500);
-  },240000);
+      const rp=document.getElementById('rp');
+      const btn=rp.querySelector('.btn.ghost');
+      btn.insertAdjacentHTML('beforebegin','<a class="btn" href="https://method.evosmp.eu" target="_blank" style="margin-bottom:4px">🌐 Open Website</a>');
+    },400);
+  });
 }
 
 function rst(){
@@ -100,4 +121,6 @@ function rst(){
   dz.querySelector('.ds').textContent='MP4 / MOV • max 500MB';
   btn.disabled=true;btn.textContent='Select a file';
   if(window._p)clearInterval(window._p);
+  // Remove fallback buttons added by compress
+  document.getElementById('rp').querySelectorAll('.btn[href*="method.evosmp"]').forEach(e=>e.remove());
 }
