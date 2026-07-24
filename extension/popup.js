@@ -74,7 +74,7 @@ function dload(buf, name, changed) {
   document.body.removeChild(a);
   setTimeout(() => URL.revokeObjectURL(url), 10000);
   document.getElementById('rp').classList.remove('h');
-  document.getElementById('ds2').textContent = changed ? '✓ Metadata patched for TikTok' : '⚠ No changes needed';
+  document.getElementById('ds2').textContent = changed ? '✓ Patched — same size is normal (metadata only)' : '✓ Already optimized — no changes needed';
   const fb = document.getElementById('fb');
   fb.href = url; fb.download = dlName; fb.classList.remove('h');
 }

@@ -145,7 +145,7 @@ btn.onclick=()=>{
         document.body.appendChild(a);a.click();document.body.removeChild(a);
         setTimeout(()=>URL.revokeObjectURL(url),10000);
         document.getElementById('rp').classList.remove('h');
-        document.getElementById('ds2').textContent=ch?'✓ Metadata patched for TikTok':'✓ No changes needed';
+        document.getElementById('ds2').textContent=ch?'✓ Patched — same size is normal (metadata only) ✓':'✓ Already optimized — no changes needed';
         const fb=document.getElementById('fb');fb.href=url;fb.download=dn;fb.classList.remove('h');
       },400)},500);
     }catch(e){clearInterval(window._p);document.getElementById('pt').textContent='⚠ Error: '+e.message}
